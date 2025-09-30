@@ -11,6 +11,7 @@ const ConfigSchema = z.object({
   port: z.coerce.number().default(3000),
   nodeEnv: z.enum(["development", "production", "test"]).default("development"),
 
+  provider: z.enum(["google", "openai"]).default("google"),
   // Google Gemini API Configuration
   geminiApiKey: z.string().min(1, "GEMINI_API_KEY is required"),
 
@@ -77,6 +78,7 @@ export const serverConfig = {
 } as const
 
 export const llmConfig = {
+  provider: config.provider,
   geminiApiKey: config.geminiApiKey,
   openAiApiKey: config.openAiApiKey,
   timeout: config.receiptProcessingTimeout,
@@ -105,7 +107,7 @@ export const isTest = () => config.nodeEnv === "test"
 // Type exports
 export type Config = z.infer<typeof ConfigSchema>
 export type ServerConfig = typeof serverConfig
-export type GeminiConfig = typeof llmConfig
+export type LLMConfig = typeof llmConfig
 export type ImageConfig = typeof imageConfig
 export type RateLimitConfig = typeof rateLimitConfig
 export type LoggingConfig = typeof loggingConfig

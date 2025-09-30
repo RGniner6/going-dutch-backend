@@ -1,21 +1,29 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
-import { HumanMessage, SystemMessage } from "langchain/schema"
+import { ChatOpenAI } from "@langchain/openai"
 import { StructuredOutputParser } from "langchain/output_parsers"
 import {
   ReceiptAnalysisResult,
   ReceiptAnalysisResultSchema,
 } from "../types/receipt"
+import { LLMConfig } from "../config"
 
 export class ReceiptProcessor {
-  private model: ChatGoogleGenerativeAI
-  private parser: StructuredOutputParser<typeof ReceiptAnalysisResultSchema>
+  private model: ChatGoogleGenerativeAI | ChatOpenAI
+  private parser: StructuredOutputParser<any>
 
-  constructor(apiKey: string) {
-    this.model = new ChatGoogleGenerativeAI({
-      modelName: "gemini-2.5-flash",
-      apiKey: apiKey,
-      temperature: 0.1,
-    })
+  constructor(config: LLMConfig) {
+    this.model =
+      config.provider === "google"
+        ? new ChatGoogleGenerativeAI({
+            modelName: "gemini-2.5-flash",
+            apiKey: config.geminiApiKey,
+            temperature: 0.1,
+          })
+        : new ChatOpenAI({
+            modelName: "gpt-4o-mini",
+            openAIApiKey: config.openAiApiKey,
+            temperature: 0.1,
+          })
 
     // Initialize the structured output parser
     this.parser = StructuredOutputParser.fromZodSchema(
@@ -62,26 +70,24 @@ export class ReceiptProcessor {
         - You must always return valid JSON fenced by a markdown code block
       `
 
-      const systemMessage = new SystemMessage({
-        content: systemTemplate,
-      })
-
-      const humanMessage = new HumanMessage({
-        content: [
-          {
-            type: "text",
-            text: "Please analyze this receipt image and extract the itemized data:",
-          },
-          {
-            type: "image_url",
-            image_url: {
-              url: `data:image/jpeg;base64,${base64Image}`,
+      const response = await this.model.invoke([
+        ["system", systemTemplate],
+        [
+          "user",
+          [
+            {
+              type: "text",
+              text: "Please analyze this receipt image and extract the itemized data:",
             },
-          },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${base64Image}`,
+              },
+            },
+          ],
         ],
-      })
-
-      const response = await this.model.invoke([systemMessage, humanMessage])
+      ])
 
       // Use StructuredOutputParser to parse the response
       try {

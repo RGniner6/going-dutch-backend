@@ -11,7 +11,7 @@ const port: number = serverConfig.port
 app.use(express.json())
 
 // Initialize receipt processor with Google Gemini API key
-const receiptProcessor = new ReceiptProcessor(llmConfig.geminiApiKey)
+const receiptProcessor = new ReceiptProcessor(llmConfig)
 
 // Routes
 app.get("/ping", (req: Request, res: Response): void => {
