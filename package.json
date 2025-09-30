@@ -12,6 +12,7 @@
     "cdk": "cdk"
   },
   "devDependencies": {
+    "@tsconfig/node22": "^22.0.2",
     "@types/express": "^5.0.3",
     "@types/jest": "^29.5.3",
     "@types/multer": "^1.4.11",
