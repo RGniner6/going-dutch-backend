@@ -30,16 +30,18 @@ Google Gemini to extract itemized data.
    npm install
    ```
 
-2. **Set up environment variables:** Create a `.env` file in the root directory:
+2. **Set up environment variables:** Create a `.env` file in the `configuration`
+   directory:
 
    ```bash
-   GEMINI_API_KEY=your_google_gemini_api_key_here
+   cp configuration/env.template configuration/.env
+   # Edit configuration/.env with your GEMINI_API_KEY
    ```
 
 3. **Get Google Gemini API Key:**
    - Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
    - Create a new API key
-   - Add it to your `.env` file
+   - Add it to your `configuration/.env` file
 
 4. **Build and run:**
    ```bash
