@@ -1,4 +1,5 @@
 import express, { Request, Response, Application } from "express"
+import cors from "cors"
 import { upload, processImage } from "./middleware/imageUpload"
 import { ReceiptProcessor } from "./services/receiptProcessor"
 import { ReceiptProcessingResponse } from "./types/receipt"
@@ -8,6 +9,12 @@ const app: Application = express()
 const port: number = serverConfig.port
 
 // Middleware
+app.use(
+  cors({
+    origin: ["http://localhost:3001", "http://localhost:3000"],
+    credentials: true,
+  }),
+)
 app.use(express.json())
 
 // Initialize receipt processor with Google Gemini API key
