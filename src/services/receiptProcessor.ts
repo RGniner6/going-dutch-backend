@@ -1,5 +1,6 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { HumanMessage, SystemMessage } from "langchain/schema"
+import { StructuredOutputParser } from "langchain/output_parsers"
 import {
   ReceiptAnalysisResult,
   ReceiptAnalysisResultSchema,
@@ -7,6 +8,7 @@ import {
 
 export class ReceiptProcessor {
   private model: ChatGoogleGenerativeAI
+  private parser: StructuredOutputParser<typeof ReceiptAnalysisResultSchema>
 
   constructor(apiKey: string) {
     this.model = new ChatGoogleGenerativeAI({
@@ -14,6 +16,11 @@ export class ReceiptProcessor {
       apiKey: apiKey,
       temperature: 0.1,
     })
+
+    // Initialize the structured output parser
+    this.parser = StructuredOutputParser.fromZodSchema(
+      ReceiptAnalysisResultSchema,
+    )
   }
 
   async processReceiptImage(
@@ -45,7 +52,15 @@ export class ReceiptProcessor {
         - "poor image quality" - if the image quality is too low
         - "receipt text not readable" - if text is too small or unclear
         - "no items found" - if no items can be identified on the receipt
-        `
+        
+        ### Output Format:
+        ${this.parser.getFormatInstructions()}
+        
+        ### Important Notes:
+        - Do not return explanations or text outside the JSON format
+        - Ensure that the JSON is valid by checking it with a JSON validator
+        - You must always return valid JSON fenced by a markdown code block
+      `
 
       const systemMessage = new SystemMessage({
         content: systemTemplate,
@@ -66,16 +81,29 @@ export class ReceiptProcessor {
         ],
       })
 
-      // @ts-expect-error -- withStructuredOutput is missing from types
-      const structuredModel = this.model.withStructuredOutput(
-        ReceiptAnalysisResultSchema,
-      )
-      const result = await structuredModel.invoke([systemMessage, humanMessage])
+      const response = await this.model.invoke([systemMessage, humanMessage])
 
-      // Additional business logic validation
-      this.validateBusinessLogic(result)
+      // Use StructuredOutputParser to parse the response
+      try {
+        const result = await this.parser.parse(String(response.content))
 
-      return result
+        // Additional business logic validation
+        this.validateBusinessLogic(result)
+
+        return result
+      } catch (validationError) {
+        console.warn(
+          "Failed to parse receipt data, returning safe default:",
+          validationError,
+        )
+        return {
+          items: [],
+          totalPrice: 0,
+          currency: "USD",
+          currencySymbol: "$",
+          errorText: "parsing error",
+        }
+      }
     } catch (error) {
       console.error("Error processing receipt:", error)
 
