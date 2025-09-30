@@ -41,7 +41,7 @@ export const processImage = async (
   req: Request,
   res: Response,
   next: NextFunction,
-): Promise<void> => {
+) => {
   try {
     if (!req.file) {
       return res.status(400).json({

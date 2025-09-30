@@ -66,8 +66,8 @@ export class ReceiptProcessor {
         ],
       })
 
-      // Use withStructuredOutput for automatic parsing and validation
-      const structuredModel = this!.model!.withStructuredOutput(
+      // @ts-expect-error -- withStructuredOutput is missing from types
+      const structuredModel = this.model.withStructuredOutput(
         ReceiptAnalysisResultSchema,
       )
       const result = await structuredModel.invoke([systemMessage, humanMessage])
