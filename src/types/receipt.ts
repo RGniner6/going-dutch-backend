@@ -19,13 +19,13 @@ export const AdditionalCostSchema = z.object({
 
 export const ReceiptAnalysisResultSchema = z.object({
   items: z.array(ReceiptItemSchema),
-  totalPrice: z.number().nonnegative("Total price cannot be negative"),
-  currency: z.string().min(1, "Currency cannot be empty"),
-  currencySymbol: z.string().optional(),
   additionalCosts: z
     .array(AdditionalCostSchema)
     .optional()
     .describe("Additional costs like taxes, surcharges, tips, etc."),
+  totalPrice: z.number().nonnegative("Total price cannot be negative"),
+  currency: z.string().min(1, "Currency cannot be empty"),
+  currencySymbol: z.string().optional(),
   errorText: z
     .string()
     .optional()
