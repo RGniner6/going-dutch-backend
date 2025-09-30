@@ -1,8 +1,8 @@
-import { config as dotEnvConfig } from "dotenv"
+import dotenv from "dotenv"
 import { z } from "zod"
 
 // Load environment variables from .env file
-dotEnvConfig()
+dotenv.config()
 
 // Define the configuration schema with validation
 const ConfigSchema = z.object({
