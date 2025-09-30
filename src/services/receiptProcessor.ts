@@ -9,18 +9,18 @@ import { LLMConfig } from "../config"
 
 export class ReceiptProcessor {
   private model: ChatGoogleGenerativeAI | ChatOpenAI
-  private parser: StructuredOutputParser<any>
+  private parser: StructuredOutputParser<typeof ReceiptAnalysisResultSchema>
 
   constructor(config: LLMConfig) {
     this.model =
       config.provider === "google"
         ? new ChatGoogleGenerativeAI({
-            modelName: "gemini-2.5-flash",
+            model: "gemini-2.5-flash",
             apiKey: config.geminiApiKey,
             temperature: 0.1,
           })
         : new ChatOpenAI({
-            modelName: "gpt-4o-mini",
+            model: "gpt-4o-mini",
             openAIApiKey: config.openAiApiKey,
             temperature: 0.1,
           })

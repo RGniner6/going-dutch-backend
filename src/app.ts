@@ -92,6 +92,7 @@ app.listen(port, (): void => {
     `📄 Receipt processing endpoint: POST http://localhost:${port}/api/receipt/process`,
   )
   console.log(`🌍 Environment: ${config.nodeEnv}`)
+  console.log(`🤖 Provider: ${llmConfig.provider}`)
   if (isDevelopment()) {
     console.log(`🔧 Development mode enabled`)
   }
