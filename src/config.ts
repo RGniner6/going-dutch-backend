@@ -14,6 +14,9 @@ const ConfigSchema = z.object({
   // Google Gemini API Configuration
   geminiApiKey: z.string().min(1, "GEMINI_API_KEY is required"),
 
+  // OPENAI API Configuration
+  openAiApiKey: z.string().min(1, "OPEN_AI_API_KEY is required"),
+
   // Logging Configuration
   logLevel: z.enum(["error", "warn", "info", "debug"]).default("info"),
 
@@ -44,6 +47,7 @@ export const config = (() => {
       port: process.env.PORT,
       nodeEnv: process.env.NODE_ENV,
       geminiApiKey: process.env.GEMINI_API_KEY,
+      openAiApiKey: process.env.OPEN_AI_API_KEY,
       logLevel: process.env.LOG_LEVEL,
       maxFileSize: process.env.MAX_FILE_SIZE,
       allowedImageTypes: process.env.ALLOWED_IMAGE_TYPES,
@@ -72,8 +76,9 @@ export const serverConfig = {
   corsOrigin: config.corsOrigin,
 } as const
 
-export const geminiConfig = {
-  apiKey: config.geminiApiKey,
+export const llmConfig = {
+  geminiApiKey: config.geminiApiKey,
+  openAiApiKey: config.openAiApiKey,
   timeout: config.receiptProcessingTimeout,
   retries: config.receiptProcessingRetries,
 } as const
@@ -100,7 +105,7 @@ export const isTest = () => config.nodeEnv === "test"
 // Type exports
 export type Config = z.infer<typeof ConfigSchema>
 export type ServerConfig = typeof serverConfig
-export type GeminiConfig = typeof geminiConfig
+export type GeminiConfig = typeof llmConfig
 export type ImageConfig = typeof imageConfig
 export type RateLimitConfig = typeof rateLimitConfig
 export type LoggingConfig = typeof loggingConfig

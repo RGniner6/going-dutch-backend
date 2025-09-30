@@ -2,7 +2,7 @@ import express, { Request, Response, Application } from "express"
 import { upload, processImage } from "./middleware/imageUpload"
 import { ReceiptProcessor } from "./services/receiptProcessor"
 import { ReceiptProcessingResponse } from "./types/receipt"
-import { config, serverConfig, geminiConfig, isDevelopment } from "./config"
+import { config, serverConfig, llmConfig, isDevelopment } from "./config"
 
 const app: Application = express()
 const port: number = serverConfig.port
@@ -11,7 +11,7 @@ const port: number = serverConfig.port
 app.use(express.json())
 
 // Initialize receipt processor with Google Gemini API key
-const receiptProcessor = new ReceiptProcessor(geminiConfig.apiKey)
+const receiptProcessor = new ReceiptProcessor(llmConfig.geminiApiKey)
 
 // Routes
 app.get("/ping", (req: Request, res: Response): void => {
@@ -85,7 +85,7 @@ app.use((error: Error, req: Request, res: Response, _next: any): void => {
 
   res.status(500).json(errorResponse)
 })
-
+// app.listen(port)
 app.listen(port, (): void => {
   console.log(`🚀 API server running at http://localhost:${port}`)
   console.log(
