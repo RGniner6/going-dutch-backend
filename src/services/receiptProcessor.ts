@@ -17,12 +17,12 @@ export class ReceiptProcessor {
         ? new ChatGoogleGenerativeAI({
             model: "gemini-2.5-flash",
             apiKey: config.geminiApiKey,
-            temperature: 0.1,
+            temperature: 0.01,
           })
         : new ChatOpenAI({
             model: "gpt-4o-mini",
             openAIApiKey: config.openAiApiKey,
-            temperature: 0.1,
+            temperature: 0.01,
           })
 
     // Initialize the structured output parser
@@ -46,12 +46,22 @@ export class ReceiptProcessor {
         1. Extract each item with its name, quantity, and individual price
         2. Read the total price from the receipt as well
         3. Identify the currency used and its symbol
-        4. If this is NOT a receipt or cannot be processed, provide a brief errorText describing why
-        5. If it's not a receipt, set errorText and return empty items array, totalPrice as 0, currency as 'AUD', and currencySymbol as '$'
-        6. Be precise with numbers and currency detection
-        7. Ensure all numbers are valid (no NaN, Infinity, or negative values for prices/quantities)
-        8. Item names should be descriptive and meaningful
-        9. Currency should be a standard 3-letter code (USD, EUR, GBP, etc.)
+        4. Extract additional costs like taxes, surcharges, tips, service charges, etc.
+        5. For each additional cost, indicate whether it's already included in the price of each item or if it's additional
+        6. If this is NOT a receipt or cannot be processed, provide a brief errorText describing why
+        7. If it's not a receipt, set errorText and return empty items array, totalPrice as 0, currency as 'USD', and currencySymbol as '$'
+        8. Be precise with numbers and currency detection
+        9. Ensure all numbers are valid (no NaN, Infinity, or negative values for prices/quantities)
+        10. Item names should be descriptive and as on the receipt
+        11. Currency should be a standard 3-letter code (USD, EUR, GBP, etc.)
+        
+        ### Additional Costs Examples:
+        - Tax (VAT, GST, Sales Tax) - usually included in subtotal
+        - Service Charge - may or may not be included
+        - Tip/Gratuity - usually not included in subtotal
+        - Delivery Fee - usually not included in subtotal
+        - Processing Fee - usually included in subtotal
+        - Surcharge - usually included in subtotal
         
         ### Error Examples:
         - "not a receipt" - if the image is not a receipt at all
@@ -66,10 +76,11 @@ export class ReceiptProcessor {
         
         ### Important Notes:
         - Do not return explanations or text outside the JSON format
-        - Ensure that the JSON is valid by checking it with a JSON validator
-        - You must always return valid JSON fenced by a markdown code block
+        - Return valid JSON without any markdown code blocks or quotations
+        - Ensure the JSON is properly formatted and valid
       `
 
+      console.time("🕐 LLM API Request")
       const response = await this.model.invoke([
         ["system", systemTemplate],
         [
@@ -88,6 +99,7 @@ export class ReceiptProcessor {
           ],
         ],
       ])
+      console.timeEnd("🕐 LLM API Request")
 
       // Use StructuredOutputParser to parse the response
       try {
@@ -107,6 +119,7 @@ export class ReceiptProcessor {
           totalPrice: 0,
           currency: "USD",
           currencySymbol: "$",
+          additionalCosts: [],
           errorText: "parsing error",
         }
       }
@@ -126,6 +139,7 @@ export class ReceiptProcessor {
           totalPrice: 0,
           currency: "USD",
           currencySymbol: "$",
+          additionalCosts: [],
           errorText: "processing error",
         }
       }
@@ -139,17 +153,24 @@ export class ReceiptProcessor {
   private validateBusinessLogic(result: ReceiptAnalysisResult): void {
     // Validate that total price matches sum of items (with small tolerance for rounding)
     if (!result.errorText && result.items.length > 0) {
-      const calculatedTotal = result.items.reduce(
+      const itemsTotal = result.items.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0,
       )
+
+      // Calculate additional costs that are excluded in the subtotal
+      const includedAdditionalCosts = (result.additionalCosts || [])
+        .filter((cost) => cost.additionalCost)
+        .reduce((sum, cost) => sum + cost.amount, 0)
+
+      const calculatedTotal = itemsTotal + includedAdditionalCosts
       const tolerance = 0.01 // 1 cent tolerance
 
       if (Math.abs(calculatedTotal - result.totalPrice) > tolerance) {
         console.warn(
           `Total price mismatch: calculated ${calculatedTotal}, reported ${result.totalPrice}`,
         )
-        // Don't throw error, just warn - sometimes receipts have taxes, tips, etc.
+        // Don't throw error, just warn - sometimes receipts have complex calculations
       }
     }
 
@@ -168,6 +189,20 @@ export class ReceiptProcessor {
     // Validate that if there's no error, it should have items
     if (!result.errorText && result.items.length === 0) {
       console.warn("Receipt processed successfully but no items found")
+    }
+
+    // Validate additional costs
+    if (result.additionalCosts) {
+      for (const cost of result.additionalCosts) {
+        if (cost.amount < 0) {
+          throw new Error(
+            `Additional cost amount cannot be negative: ${cost.name}`,
+          )
+        }
+        if (!cost.name || cost.name.trim().length === 0) {
+          throw new Error("Additional cost name cannot be empty")
+        }
+      }
     }
   }
 }

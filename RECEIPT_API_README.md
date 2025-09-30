@@ -9,6 +9,7 @@ Google Gemini to extract itemized data.
   - Itemized list (name, quantity, price)
   - Total price
   - Currency and currency symbol
+  - Additional costs (taxes, surcharges, tips, etc.) with inclusion status
   - Error description (if image cannot be processed as receipt)
 
 - **Type-safe** - Full TypeScript support with Zod schema validation
@@ -71,28 +72,35 @@ curl -X POST \
 
 **Success Response:**
 
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "name": "Coffee",
-        "quantity": 2,
-        "price": 4.5
-      },
-      {
-        "name": "Sandwich",
-        "quantity": 1,
-        "price": 8.99
-      }
-    ],
-    "totalPrice": 13.49,
-    "currency": "USD",
-    "currencySymbol": "$"
-  }
-}
-```
+        ```json
+        {
+          "success": true,
+          "data": {
+            "items": [
+              {
+                "name": "Coffee",
+                "quantity": 2,
+                "price": 4.5
+              },
+              {
+                "name": "Sandwich",
+                "quantity": 1,
+                "price": 8.99
+              }
+            ],
+            "totalPrice": 15.24,
+            "currency": "USD",
+            "currencySymbol": "$",
+            "additionalCosts": [
+              {
+                "name": "Sales Tax",
+                "amount": 1.75,
+                "includedInTotal": true
+              }
+            ]
+          }
+        }
+        ```
 
 **Error Response (when image cannot be processed as receipt):**
 
@@ -104,6 +112,7 @@ curl -X POST \
     "totalPrice": 0,
     "currency": "USD",
     "currencySymbol": "$",
+    "additionalCosts": [],
     "errorText": "too blurry"
   }
 }
