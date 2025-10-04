@@ -1,0 +1,27 @@
+# Ignore source files and development dependencies
+src/
+test/
+node_modules/
+*.ts
+tsconfig.json
+jest.config.js
+
+# Keep built files for deployment
+!dist/
+
+# Ignore development files
+.git/
+.gitignore
+README.md
+RECEIPT_API_README.md
+setup-config.sh
+
+# Ignore CDK files
+cdk.json
+lib/
+bin/
+lambda/
+
+# Ignore configuration template (use environment variables in production)
+configuration/env.template
+configuration/README.md
