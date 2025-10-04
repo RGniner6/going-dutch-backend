@@ -35,7 +35,7 @@ const ConfigSchema = z.object({
   corsOrigins: z
     .string()
     .default(
-      "http://localhost:3000,http://localhost:3001,https://main.d11ijhe1sm8dp5.amplifyapp.com",
+      "http://localhost:3000,http://localhost:3001,https://main.d11ijhe1sm8dp5.amplifyapp.com,https://*.amplifyapp.com,https://*.vercel.app,https://*.netlify.app",
     ),
 
   // Rate Limiting Configuration

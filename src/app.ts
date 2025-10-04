@@ -11,7 +11,29 @@ const port: number = serverConfig.port
 // Middleware
 app.use(
   cors({
-    origin: serverConfig.corsOrigins,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin is in allowed list
+      if (serverConfig.corsOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      // For production, also allow common deployment platforms
+      const allowedPatterns = [
+        /^https:\/\/.*\.amplifyapp\.com$/,
+        /^https:\/\/.*\.vercel\.app$/,
+        /^https:\/\/.*\.netlify\.app$/,
+        /^https:\/\/.*\.github\.io$/,
+      ];
+      
+      if (allowedPatterns.some(pattern => pattern.test(origin))) {
+        return callback(null, true);
+      }
+      
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   }),
 )
