@@ -24,7 +24,8 @@
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "ts-jest": "^29.1.1",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.1",
+    "typescript": "~5.1.6"
   },
   "dependencies": {
     "@google/generative-ai": "^0.2.1",
@@ -40,7 +41,6 @@
     "multer": "^2.0.2",
     "sharp": "^0.33.0",
     "source-map-support": "^0.5.21",
-    "typescript": "~5.1.6",
     "zod": "^3.22.4"
   }
 }
