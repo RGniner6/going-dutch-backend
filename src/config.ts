@@ -47,8 +47,8 @@ export const config = (() => {
     return ConfigSchema.parse({
       port: process.env.PORT,
       nodeEnv: process.env.NODE_ENV,
-      geminiApiKey: process.env.GEMINI_API_KEY,
-      openAiApiKey: process.env.OPEN_AI_API_KEY,
+      geminiApiKey: process.env.GEMINI_API_KEY ?? "placeholder",
+      openAiApiKey: process.env.OPEN_AI_API_KEY ?? "placeholder",
       logLevel: process.env.LOG_LEVEL,
       maxFileSize: process.env.MAX_FILE_SIZE,
       allowedImageTypes: process.env.ALLOWED_IMAGE_TYPES,
