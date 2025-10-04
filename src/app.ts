@@ -11,7 +11,7 @@ const port: number = serverConfig.port
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:3001", "http://localhost:3000"],
+    origin: serverConfig.corsOrigins,
     credentials: true,
   }),
 )

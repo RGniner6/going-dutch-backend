@@ -32,7 +32,11 @@ const ConfigSchema = z.object({
     ),
 
   // CORS Configuration
-  corsOrigin: z.string().default("http://localhost:3000"),
+  corsOrigins: z
+    .string()
+    .default(
+      "http://localhost:3000,http://localhost:3001,https://main.d11ijhe1sm8dp5.amplifyapp.com",
+    ),
 
   // Rate Limiting Configuration
   rateLimitWindowMs: z.coerce.number().default(15 * 60 * 1000), // 15 minutes
@@ -49,12 +53,12 @@ export const config = (() => {
     return ConfigSchema.parse({
       port: process.env.PORT,
       nodeEnv: process.env.NODE_ENV,
-      geminiApiKey: process.env.GEMINI_API_KEY ?? "placeholder",
-      openAiApiKey: process.env.OPEN_AI_API_KEY ?? "placeholder",
+      geminiApiKey: process.env.GEMINI_API_KEY,
+      openAiApiKey: process.env.OPEN_AI_API_KEY,
       logLevel: process.env.LOG_LEVEL,
       maxFileSize: process.env.MAX_FILE_SIZE,
       allowedImageTypes: process.env.ALLOWED_IMAGE_TYPES,
-      corsOrigin: process.env.CORS_ORIGIN,
+      corsOrigins: process.env.CORS_ORIGINS,
       rateLimitWindowMs: process.env.RATE_LIMIT_WINDOW_MS,
       rateLimitMaxRequests: process.env.RATE_LIMIT_MAX_REQUESTS,
       receiptProcessingTimeout: process.env.RECEIPT_PROCESSING_TIMEOUT,
@@ -76,7 +80,7 @@ export const config = (() => {
 export const serverConfig = {
   port: config.port,
   nodeEnv: config.nodeEnv,
-  corsOrigin: config.corsOrigin,
+  corsOrigins: config.corsOrigins.split(",").map((origin) => origin.trim()),
 } as const
 
 export const llmConfig = {
