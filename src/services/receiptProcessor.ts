@@ -1,6 +1,6 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ChatOpenAI } from "@langchain/openai"
-import { StructuredOutputParser } from "langchain/output_parsers"
+import { StructuredOutputParser } from "@langchain/classic/output_parsers"
 import {
   ReceiptAnalysisResult,
   ReceiptAnalysisResultSchema,
@@ -15,7 +15,7 @@ export class ReceiptProcessor {
     this.model =
       config.provider === "google"
         ? new ChatGoogleGenerativeAI({
-            model: "gemini-2.5-flash",
+            model: "gemini-3.1-flash-lite",
             apiKey: config.geminiApiKey,
             temperature: 0.01,
           })
