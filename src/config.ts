@@ -2,8 +2,9 @@ import dotenv from "dotenv"
 import { z } from "zod"
 import path from "path"
 
-// Load environment variables from .env file in configuration folder (only in development)
-if (process.env.NODE_ENV === "development") {
+// NODE_ENV may be declared inside the local .env file, so load that file
+// before checking its value when the shell has not set it yet.
+if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
   dotenv.config({ path: path.resolve(process.cwd(), "configuration", ".env") })
 }
 
@@ -14,11 +15,9 @@ const ConfigSchema = z.object({
   nodeEnv: z.enum(["development", "production", "test"]).default("development"),
 
   provider: z.enum(["google", "openai"]).default("google"),
-  // Google Gemini API Configuration
-  geminiApiKey: z.string().min(1, "GEMINI_API_KEY is required"),
-
-  // OPENAI API Configuration
-  openAiApiKey: z.string().min(1, "OPEN_AI_API_KEY is required"),
+  // Only the selected provider's key is required (validated below).
+  geminiApiKey: z.string().default(""),
+  openAiApiKey: z.string().default(""),
 
   // Logging Configuration
   logLevel: z.enum(["error", "warn", "info", "debug"]).default("info"),
@@ -35,7 +34,7 @@ const ConfigSchema = z.object({
   corsOrigins: z
     .string()
     .default(
-      "http://localhost:3000,http://localhost:3001,https://main.d11ijhe1sm8dp5.amplifyapp.com,https://*.amplifyapp.com,https://*.vercel.app,https://*.netlify.app",
+      "http://localhost:3000,http://localhost:3001,http://localhost:5173,https://main.d11ijhe1sm8dp5.amplifyapp.com,https://*.amplifyapp.com,https://*.vercel.app,https://*.netlify.app",
     ),
 
   // Rate Limiting Configuration
@@ -45,6 +44,22 @@ const ConfigSchema = z.object({
   // Receipt Processing Configuration
   receiptProcessingTimeout: z.coerce.number().default(30000), // 30 seconds
   receiptProcessingRetries: z.coerce.number().default(3),
+}).superRefine((config, context) => {
+  if (config.provider === "google" && !config.geminiApiKey) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["geminiApiKey"],
+      message: "GEMINI_API_KEY is required when PROVIDER=google",
+    })
+  }
+
+  if (config.provider === "openai" && !config.openAiApiKey) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["openAiApiKey"],
+      message: "OPEN_AI_API_KEY is required when PROVIDER=openai",
+    })
+  }
 })
 
 // Parse and validate environment variables
@@ -53,6 +68,7 @@ export const config = (() => {
     return ConfigSchema.parse({
       port: process.env.PORT,
       nodeEnv: process.env.NODE_ENV,
+      provider: process.env.PROVIDER,
       geminiApiKey: process.env.GEMINI_API_KEY,
       openAiApiKey: process.env.OPEN_AI_API_KEY,
       logLevel: process.env.LOG_LEVEL,
