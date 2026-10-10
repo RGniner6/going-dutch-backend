@@ -15,17 +15,25 @@ This folder contains all configuration files for the application.
    cp configuration/env.template configuration/.env
    ```
 
+   Skip this step if `configuration/.env` already exists; copying the template
+   over it would replace your local settings.
+
 2. **Edit the .env file:**
    ```bash
-   # Add your actual API keys and configuration values
+   # Gemini is the default provider. Add your actual API key:
    GEMINI_API_KEY=your_actual_api_key_here
    ```
 
 ## Environment Variables
 
-### Required
+### Required for the default Gemini provider
 
 - `GEMINI_API_KEY` - Your Google Gemini API key
+
+### Optional
+
+- `PROVIDER` - `google` (default) or `openai`
+- `OPEN_AI_API_KEY` - Required only when `PROVIDER=openai`
 
 ### Optional (with defaults)
 
@@ -33,7 +41,7 @@ This folder contains all configuration files for the application.
 - `NODE_ENV` - Environment mode (default: development)
 - `LOG_LEVEL` - Logging level (default: info)
 - `MAX_FILE_SIZE` - Max upload size in bytes (default: 5MB)
-- `CORS_ORIGIN` - CORS origin (default: http://localhost:3000)
+- `CORS_ORIGINS` - Comma-separated allowed origins (includes the local Vite app by default)
 - `RATE_LIMIT_WINDOW_MS` - Rate limit window (default: 15 minutes)
 - `RATE_LIMIT_MAX_REQUESTS` - Max requests per window (default: 10)
 
